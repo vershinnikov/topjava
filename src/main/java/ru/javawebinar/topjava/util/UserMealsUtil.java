@@ -9,6 +9,8 @@ import java.time.Month;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 /**
  * GKislin
@@ -31,6 +33,7 @@ public class UserMealsUtil {
         boolean exceed = mealList.stream().mapToInt(UserMeal::getCalories).sum() > caloriesPerDay;
         return mealList.stream().
                 filter(meal -> TimeUtil.isBetween(meal.getDateTime().toLocalTime(), startTime, endTime)).
-                collect(ArrayList::new, (userMealWithExceeds, e) -> userMealWithExceeds.add(new UserMealWithExceed(e, exceed)), List::addAll);
+                map(userMeal -> new UserMealWithExceed(userMeal,exceed)).
+                collect(Collectors.toList());
     }
 }

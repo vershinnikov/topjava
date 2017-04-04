@@ -3,13 +3,13 @@ package ru.javawebinar.topjava.util;
 import ru.javawebinar.topjava.model.UserMeal;
 import ru.javawebinar.topjava.model.UserMealWithExceed;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collector;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -30,10 +30,12 @@ public class UserMealsUtil {
     }
 
     public static List<UserMealWithExceed> getFilteredWithExceeded(List<UserMeal> mealList, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
-        boolean exceed = mealList.stream().mapToInt(UserMeal::getCalories).sum() > caloriesPerDay;
+        Map<LocalDate, Integer> caloriesPerDayMap = mealList.stream().collect(
+                Collectors.groupingBy(meal -> meal.getDateTime().toLocalDate(), Collectors.reducing(0, UserMeal::getCalories, Integer::sum))
+        );
         return mealList.stream().
                 filter(meal -> TimeUtil.isBetween(meal.getDateTime().toLocalTime(), startTime, endTime)).
-                map(userMeal -> new UserMealWithExceed(userMeal,exceed)).
+                map(userMeal -> new UserMealWithExceed(userMeal, caloriesPerDayMap.get(userMeal.getDateTime().toLocalDate()) > caloriesPerDay)).
                 collect(Collectors.toList());
     }
 }
